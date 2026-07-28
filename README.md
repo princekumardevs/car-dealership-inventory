@@ -180,6 +180,32 @@ Tests:       40 passed, 40 total
 Time:        15.835 s
 ```
 
+### Step 4 — Vehicle Search (2026-07-28)
+
+```
+PASS tests/vehicle.test.ts (12.983 s)
+
+  GET /api/vehicles/search
+    √ should return 401 without a token (191 ms)
+    √ should return all vehicles when no query params are given (187 ms)
+    √ should filter by make (case-insensitive) (187 ms)
+    √ should filter by model (case-insensitive) (183 ms)
+    √ should filter by category (188 ms)
+    √ should filter by minPrice (187 ms)
+    √ should filter by maxPrice (189 ms)
+    √ should filter by a price range (minPrice + maxPrice) (186 ms)
+    √ should combine multiple filters (make + category) (194 ms)
+    √ should return an empty array when no vehicles match the filters (188 ms)
+    √ should return 400 if minPrice is not a valid number (180 ms)
+    √ should return 400 if maxPrice is not a valid number (182 ms)
+
+PASS tests/auth.test.ts (5.753 s) — 17 passed (unchanged)
+
+Test Suites: 2 passed, 2 total
+Tests:       52 passed, 52 total
+Time:        18.879 s
+```
+
 ---
 
 ## API Reference
@@ -229,6 +255,16 @@ Time:        15.835 s
 - After approval: implemented `src/middleware/auth.ts` (JWT verify + `requireRole` factory), `src/controllers/auth.controller.ts` (register + login with bcryptjs hashing), `src/routes/auth.routes.ts`, and wired into `app.ts`.
 - Debugged three successive TS strict-mode failures iteratively (non-optional `delete`, direct cast to `Record<string,unknown>`, and 404 catch-all registered before test routes).
 - Final result: **17/17 tests green** on the third `npm test` run.
+
+#### Step 3 — Vehicle CRUD (`GET/POST/PUT/DELETE /api/vehicles`)
+- Wrote 23 failing tests in `tests/vehicle.test.ts`; after approval implemented `vehicle.controller.ts` and `vehicle.routes.ts`.
+- Debugged one TS compile error: `IVehicle extends Document` clashed with Mongoose's `.model()` method — fixed by removing `extends Document`.
+- Final result: **40/40 tests green** on the second run.
+
+#### Step 4 — `GET /api/vehicles/search`
+- Wrote 12 failing tests covering no-auth, no-filter, make/model/category filters, price range, combined filters, no-match, and invalid price param validation.
+- After approval: added `searchVehicles` to the controller (dynamic Mongoose filter, `$regex` for case-insensitive make/model, `$gte`/`$lte` for prices); mounted `/search` before `/:id` to prevent Express treating "search" as an ID.
+- Final result: **52/52 tests green** on the second run.
 
 ### Workflow Reflection
 

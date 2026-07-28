@@ -117,3 +117,31 @@ Maintained in chronological order and updated after each exchange, as required b
 - Updated README and PROMPTS.md. Proposed commit message. Stopped — did not begin Step 4.
 
 ---
+
+### Prompt 7
+
+> go
+
+*(Approval to write the Step 4 failing tests)*
+
+**AI Response:**
+- Appended a new `GET /api/vehicles/search` describe block to `tests/vehicle.test.ts` — 12 tests: no-auth, no-filter (all 5 results), make filter (case-insensitive), model filter (case-insensitive), category filter, minPrice, maxPrice, price range, combined make+category, no-match empty array, invalid minPrice, invalid maxPrice.
+- Ran `npm test` — 11 new tests failed (all 404, route not yet mounted); 1 passed for free (401 without token, authMiddleware already in place); auth+CRUD suites stayed 40/40.
+- Stopped and listed all 12 tests for review.
+
+---
+
+### Prompt 8
+
+> go
+
+*(Approval to implement Step 4)*
+
+**AI Response:**
+- Added `searchVehicles` to `vehicle.controller.ts` — builds a dynamic Mongoose filter: `$regex` (case-insensitive) for make/model, exact string match for category, `$gte`/`$lte` for price range; validates minPrice/maxPrice are numeric before querying.
+- Added `GET /search` to `vehicle.routes.ts`, explicitly mounted before `/:id` routes to prevent Express treating "search" as an ID param.
+- Cleaned up a duplicate route registration caused by an edit tool error (overwritten with correct file).
+- Final `npm test` result: **52/52 passed** on the second run.
+- Updated README test report and AI usage sections. Proposed commit message. Stopped — did not begin Step 5.
+
+---

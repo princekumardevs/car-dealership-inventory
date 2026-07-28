@@ -1,6 +1,7 @@
 import { Router } from "express";
 import {
   getVehicles,
+  searchVehicles,
   createVehicle,
   updateVehicle,
   deleteVehicle,
@@ -18,6 +19,15 @@ router.use(authMiddleware);
  * @desc   List all vehicles, newest first
  */
 router.get("/", getVehicles);
+
+/**
+ * @route  GET /api/vehicles/search
+ * @access Authenticated (any role)
+ * @desc   Search/filter vehicles by make, model, category, and/or price range.
+ *         MUST be registered before /:id so Express does not treat "search"
+ *         as a vehicle ID parameter.
+ */
+router.get("/search", searchVehicles);
 
 /**
  * @route  POST /api/vehicles

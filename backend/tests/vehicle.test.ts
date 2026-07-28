@@ -361,3 +361,154 @@ describe("DELETE /api/vehicles/:id", () => {
     expect(res.body).toHaveProperty("message");
   });
 });
+
+// ─────────────────────────────────────────────────────────────────────────────
+// GET /api/vehicles/search
+// NOTE: This route MUST be registered before /:id in the router, otherwise
+// Express will match "search" as an id parameter.
+// ─────────────────────────────────────────────────────────────────────────────
+describe("GET /api/vehicles/search", () => {
+  // Seed a variety of vehicles before each test in this group
+  beforeEach(async () => {
+    const seed = [
+      { make: "Toyota", model: "Camry",   year: 2023, category: "sedan",    price: 25000, quantity: 5 },
+      { make: "Toyota", model: "RAV4",    year: 2022, category: "suv",      price: 32000, quantity: 3 },
+      { make: "Honda",  model: "Civic",   year: 2023, category: "sedan",    price: 22000, quantity: 8 },
+      { make: "Ford",   model: "F-150",   year: 2021, category: "truck",    price: 45000, quantity: 2 },
+      { make: "Tesla",  model: "Model 3", year: 2023, category: "electric", price: 40000, quantity: 0 },
+    ];
+    for (const v of seed) {
+      await request(app)
+        .post("/api/vehicles")
+        .set("Authorization", `Bearer ${adminToken}`)
+        .send(v);
+    }
+  });
+
+  it("should return 401 without a token", async () => {
+    const res = await request(app).get("/api/vehicles/search");
+    expect(res.status).toBe(401);
+  });
+
+  it("should return all vehicles when no query params are given", async () => {
+    const res = await request(app)
+      .get("/api/vehicles/search")
+      .set("Authorization", `Bearer ${userToken}`);
+
+    expect(res.status).toBe(200);
+    expect(res.body).toHaveProperty("vehicles");
+    expect(res.body.vehicles).toHaveLength(5);
+  });
+
+  it("should filter by make (case-insensitive)", async () => {
+    const res = await request(app)
+      .get("/api/vehicles/search?make=toyota")
+      .set("Authorization", `Bearer ${userToken}`);
+
+    expect(res.status).toBe(200);
+    expect(res.body.vehicles).toHaveLength(2);
+    (res.body.vehicles as { make: string }[]).forEach((v) => {
+      expect(v.make.toLowerCase()).toBe("toyota");
+    });
+  });
+
+  it("should filter by model (case-insensitive)", async () => {
+    const res = await request(app)
+      .get("/api/vehicles/search?model=civic")
+      .set("Authorization", `Bearer ${userToken}`);
+
+    expect(res.status).toBe(200);
+    expect(res.body.vehicles).toHaveLength(1);
+    expect(res.body.vehicles[0].model).toBe("Civic");
+  });
+
+  it("should filter by category", async () => {
+    const res = await request(app)
+      .get("/api/vehicles/search?category=sedan")
+      .set("Authorization", `Bearer ${userToken}`);
+
+    expect(res.status).toBe(200);
+    expect(res.body.vehicles).toHaveLength(2);
+    (res.body.vehicles as { category: string }[]).forEach((v) => {
+      expect(v.category).toBe("sedan");
+    });
+  });
+
+  it("should filter by minPrice", async () => {
+    const res = await request(app)
+      .get("/api/vehicles/search?minPrice=35000")
+      .set("Authorization", `Bearer ${userToken}`);
+
+    expect(res.status).toBe(200);
+    // Ford F-150 (45 000) + Tesla Model 3 (40 000)
+    expect(res.body.vehicles).toHaveLength(2);
+    (res.body.vehicles as { price: number }[]).forEach((v) => {
+      expect(v.price).toBeGreaterThanOrEqual(35000);
+    });
+  });
+
+  it("should filter by maxPrice", async () => {
+    const res = await request(app)
+      .get("/api/vehicles/search?maxPrice=25000")
+      .set("Authorization", `Bearer ${userToken}`);
+
+    expect(res.status).toBe(200);
+    // Toyota Camry (25 000) + Honda Civic (22 000)
+    expect(res.body.vehicles).toHaveLength(2);
+    (res.body.vehicles as { price: number }[]).forEach((v) => {
+      expect(v.price).toBeLessThanOrEqual(25000);
+    });
+  });
+
+  it("should filter by a price range (minPrice + maxPrice)", async () => {
+    const res = await request(app)
+      .get("/api/vehicles/search?minPrice=22000&maxPrice=32000")
+      .set("Authorization", `Bearer ${userToken}`);
+
+    expect(res.status).toBe(200);
+    // Camry (25k) + RAV4 (32k) + Civic (22k)
+    expect(res.body.vehicles).toHaveLength(3);
+    (res.body.vehicles as { price: number }[]).forEach((v) => {
+      expect(v.price).toBeGreaterThanOrEqual(22000);
+      expect(v.price).toBeLessThanOrEqual(32000);
+    });
+  });
+
+  it("should combine multiple filters (make + category)", async () => {
+    const res = await request(app)
+      .get("/api/vehicles/search?make=Toyota&category=suv")
+      .set("Authorization", `Bearer ${userToken}`);
+
+    expect(res.status).toBe(200);
+    expect(res.body.vehicles).toHaveLength(1);
+    expect(res.body.vehicles[0].model).toBe("RAV4");
+  });
+
+  it("should return an empty array when no vehicles match the filters", async () => {
+    const res = await request(app)
+      .get("/api/vehicles/search?make=BMW")
+      .set("Authorization", `Bearer ${userToken}`);
+
+    expect(res.status).toBe(200);
+    expect(Array.isArray(res.body.vehicles)).toBe(true);
+    expect(res.body.vehicles).toHaveLength(0);
+  });
+
+  it("should return 400 if minPrice is not a valid number", async () => {
+    const res = await request(app)
+      .get("/api/vehicles/search?minPrice=notanumber")
+      .set("Authorization", `Bearer ${userToken}`);
+
+    expect(res.status).toBe(400);
+    expect(res.body).toHaveProperty("message");
+  });
+
+  it("should return 400 if maxPrice is not a valid number", async () => {
+    const res = await request(app)
+      .get("/api/vehicles/search?maxPrice=notanumber")
+      .set("Authorization", `Bearer ${userToken}`);
+
+    expect(res.status).toBe(400);
+    expect(res.body).toHaveProperty("message");
+  });
+});

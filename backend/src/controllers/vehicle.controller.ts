@@ -17,8 +17,48 @@ export const getVehicles = async (_req: Request, res: Response): Promise<void> =
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
-// POST /api/vehicles   (admin only)
+// GET /api/vehicles/search?make=&model=&category=&minPrice=&maxPrice=
 // ─────────────────────────────────────────────────────────────────────────────
+export const searchVehicles = async (req: Request, res: Response): Promise<void> => {
+  const { make, model, category, minPrice, maxPrice } = req.query;
+
+  // ── Validate numeric params before touching the DB ────────────────────────
+  if (minPrice !== undefined && isNaN(Number(minPrice))) {
+    res.status(400).json({ message: "minPrice must be a valid number." });
+    return;
+  }
+  if (maxPrice !== undefined && isNaN(Number(maxPrice))) {
+    res.status(400).json({ message: "maxPrice must be a valid number." });
+    return;
+  }
+
+  // ── Build filter dynamically ──────────────────────────────────────────────
+  const filter: Record<string, unknown> = {};
+
+  // Case-insensitive regex so "toyota" matches "Toyota"
+  if (make) {
+    filter.make = { $regex: new RegExp(String(make), "i") };
+  }
+  if (model) {
+    filter.model = { $regex: new RegExp(String(model), "i") };
+  }
+  // Exact match — category is an enum, no need for regex
+  if (category) {
+    filter.category = String(category);
+  }
+  // Build price range using $gte / $lte only when the param is present
+  if (minPrice !== undefined || maxPrice !== undefined) {
+    const priceFilter: { $gte?: number; $lte?: number } = {};
+    if (minPrice !== undefined) priceFilter.$gte = Number(minPrice);
+    if (maxPrice !== undefined) priceFilter.$lte = Number(maxPrice);
+    filter.price = priceFilter;
+  }
+
+  const vehicles = await Vehicle.find(filter).sort({ createdAt: -1 });
+  res.status(200).json({ vehicles });
+};
+
+
 export const createVehicle = async (req: Request, res: Response): Promise<void> => {
   const { make, model, year, category, price, quantity, description } = req.body;
 
