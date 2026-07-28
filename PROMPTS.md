@@ -47,3 +47,40 @@ Maintained in chronological order and updated after each exchange, as required b
 - Proposed a commit message and stopped. Did not begin Step 2.
 
 ---
+
+### Prompt 3
+
+> go
+
+*(Approval to write the Step 2 failing tests)*
+
+**AI Response:**
+- Created `backend/tests/auth.test.ts` with 17 failing tests covering:
+  - `POST /api/auth/register` — 7 tests (happy path, 5 validation errors, duplicate email)
+  - `POST /api/auth/login` — 5 tests (happy path, missing fields, wrong password, unknown email)
+  - JWT Auth Middleware — 5 tests via a test-only `/api/__test__/protected` route (no token, bad scheme, invalid token, expired token, valid token)
+- Fixed `jest.config.ts`: removed invalid `runInBand` key and migrated to the modern `transform` syntax.
+- Ran `npm test` and confirmed tests **failed red** (`Cannot find module '../src/middleware/auth'`).
+- Stopped and showed the test list for review.
+
+---
+
+### Prompt 4
+
+> go
+
+*(Approval to implement Step 2)*
+
+**AI Response:**
+- Implemented `backend/src/middleware/auth.ts` — verifies Bearer JWT, loads user from DB, attaches to `req.user`; exports `requireRole()` factory.
+- Implemented `backend/src/controllers/auth.controller.ts` — register (validate → bcrypt hash → create → strip passwordHash → sign JWT) and login (find → bcrypt compare → strip passwordHash → sign JWT).
+- Implemented `backend/src/routes/auth.routes.ts` and wired into `app.ts`.
+- Debugged three successive TS strict-mode compile errors:
+  1. `delete` on non-optional property → cast through `unknown as Record<string, unknown>` → still failed → resolved by removing redundant `toJSON` transform and using `toObject() as unknown as Record<string, unknown>`.
+  2. `runInBand` in jest config object (CLI-only flag) → removed.
+  3. 404 catch-all registered inside `createApp()` intercepting test-added routes → moved catch-all and error handler to `server.ts`, exported as `notFoundHandler` / `errorHandler`.
+- Final `npm test` result: **17/17 passed**.
+- Updated README test report and AI usage sections.
+- Proposed commit message. Stopped — did not begin Step 3.
+
+---

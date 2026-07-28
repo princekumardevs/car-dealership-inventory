@@ -36,6 +36,7 @@ const UserSchema = new Schema<IUser>(
     passwordHash: {
       type: String,
       required: [true, "Password hash is required"],
+      select: false, // never returned in queries unless explicitly requested
     },
     role: {
       type: String,
@@ -48,13 +49,9 @@ const UserSchema = new Schema<IUser>(
   }
 );
 
-// Never return passwordHash in JSON responses
-UserSchema.set("toJSON", {
-  transform: (_doc, ret) => {
-    delete ret.passwordHash;
-    return ret;
-  },
-});
+// passwordHash is excluded from all query results via `select: false` on the schema field.
+// It must be explicitly re-included with .select("+passwordHash") when needed (e.g. login).
+
 
 const User = mongoose.model<IUser>("User", UserSchema);
 

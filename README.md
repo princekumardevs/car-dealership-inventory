@@ -109,7 +109,36 @@ Tests run serially (`--runInBand`) to avoid port/database conflicts between suit
 
 > 📋 **This section is updated after each `npm test` run with actual output. No results are fabricated.**
 
-*No tests have been run yet — test suite will be populated starting from Step 2.*
+### Step 2 — Auth (2026-07-28)
+
+```
+PASS tests/auth.test.ts (10.679 s)
+
+  POST /api/auth/register
+    √ should register a new user and return 201 with a JWT token (350 ms)
+    √ should return 400 if name is missing (8 ms)
+    √ should return 400 if email is missing (8 ms)
+    √ should return 400 if password is missing (7 ms)
+    √ should return 400 for an invalid email format (8 ms)
+    √ should return 400 if password is shorter than 6 characters (7 ms)
+    √ should return 409 if email is already registered (281 ms)
+  POST /api/auth/login
+    √ should return 200 with a JWT token for valid credentials (557 ms)
+    √ should return 400 if email is missing (271 ms)
+    √ should return 400 if password is missing (270 ms)
+    √ should return 401 for a wrong password (519 ms)
+    √ should return 401 for an email that does not exist (272 ms)
+  JWT Auth Middleware
+    √ should return 401 when no Authorization header is provided (276 ms)
+    √ should return 401 for a malformed token (not Bearer scheme) (271 ms)
+    √ should return 401 for an invalid / tampered token (267 ms)
+    √ should return 401 for an expired token (304 ms)
+    √ should return 200 and grant access with a valid token (280 ms)
+
+Test Suites: 1 passed, 1 total
+Tests:       17 passed, 17 total
+Time:        10.817 s
+```
 
 ---
 
@@ -155,7 +184,11 @@ Tests run serially (`--runInBand`) to avoid port/database conflicts between suit
 - After approval, generated all scaffold files: `package.json`, `tsconfig.json`, `jest.config.ts`, `db.ts`, `User.ts`, `Vehicle.ts`, `app.ts`, `server.ts`, `.env.example`, and documentation stubs.
 - All generated files were reviewed before being written.
 
-*Additional entries will be logged here as each subsequent feature is completed.*
+#### Step 2 — Auth endpoints + JWT middleware
+- Wrote the complete failing test suite (`tests/auth.test.ts`) first — 17 tests across register, login, and middleware — and stopped for approval.
+- After approval: implemented `src/middleware/auth.ts` (JWT verify + `requireRole` factory), `src/controllers/auth.controller.ts` (register + login with bcryptjs hashing), `src/routes/auth.routes.ts`, and wired into `app.ts`.
+- Debugged three successive TS strict-mode failures iteratively (non-optional `delete`, direct cast to `Record<string,unknown>`, and 404 catch-all registered before test routes).
+- Final result: **17/17 tests green** on the third `npm test` run.
 
 ### Workflow Reflection
 
