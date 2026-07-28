@@ -140,6 +140,46 @@ Tests:       17 passed, 17 total
 Time:        10.817 s
 ```
 
+### Step 3 — Vehicle CRUD (2026-07-28)
+
+```
+PASS tests/vehicle.test.ts (10.209 s)
+
+  GET /api/vehicles
+    √ should return 401 when no token is provided (260 ms)
+    √ should return 200 with an empty array when no vehicles exist (173 ms)
+    √ should return 200 with a list of all vehicles (211 ms)
+    √ should return vehicles with the expected fields (198 ms)
+  POST /api/vehicles
+    √ should return 401 when no token is provided (158 ms)
+    √ should return 403 when called by a non-admin user (153 ms)
+    √ should return 201 with the created vehicle when called by an admin (195 ms)
+    √ should return 400 if make is missing (180 ms)
+    √ should return 400 if model is missing (168 ms)
+    √ should return 400 if category is invalid (178 ms)
+    √ should return 400 if price is negative (161 ms)
+    √ should return 400 if quantity is negative (217 ms)
+  PUT /api/vehicles/:id
+    √ should return 401 when no token is provided (201 ms)
+    √ should return 403 when called by a non-admin user (204 ms)
+    √ should return 200 with the updated vehicle when called by an admin (197 ms)
+    √ should return 404 for a valid but non-existent vehicle ID (169 ms)
+    √ should return 400 for a malformed vehicle ID (172 ms)
+    √ should return 400 if the update sets price to a negative value (175 ms)
+  DELETE /api/vehicles/:id
+    √ should return 401 when no token is provided (183 ms)
+    √ should return 403 when called by a non-admin user (174 ms)
+    √ should return 200 and delete the vehicle when called by an admin (194 ms)
+    √ should return 404 for a valid but non-existent vehicle ID (155 ms)
+    √ should return 400 for a malformed vehicle ID (146 ms)
+
+PASS tests/auth.test.ts (5.503 s) — 17 passed (unchanged)
+
+Test Suites: 2 passed, 2 total
+Tests:       40 passed, 40 total
+Time:        15.835 s
+```
+
 ---
 
 ## API Reference

@@ -1,6 +1,7 @@
 import express, { Application, Request, Response, NextFunction } from "express";
 import cors from "cors";
 import authRoutes from "./routes/auth.routes";
+import vehicleRoutes from "./routes/vehicle.routes";
 
 /**
  * Creates and configures the Express application.
@@ -21,6 +22,7 @@ const createApp = (): Application => {
 
   // ── Routes ───────────────────────────────────────────────────────────────────
   app.use("/api/auth", authRoutes);
+  app.use("/api/vehicles", vehicleRoutes);
 
   // ── Health check ─────────────────────────────────────────────────────────────
   app.get("/api/health", (_req: Request, res: Response) => {

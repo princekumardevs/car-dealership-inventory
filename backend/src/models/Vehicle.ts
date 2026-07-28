@@ -1,4 +1,4 @@
-import mongoose, { Document, Schema } from "mongoose";
+import mongoose, { Schema } from "mongoose";
 
 /**
  * Vehicle categories supported by the dealership.
@@ -16,7 +16,13 @@ export type VehicleCategory =
   | "hybrid"
   | "other";
 
-export interface IVehicle extends Document {
+/**
+ * Plain data interface — does NOT extend Document.
+ * The field name "model" would clash with Mongoose Document's .model() method
+ * if we extended Document directly. mongoose.model<IVehicle>() provides full
+ * Document hydration at runtime without the TypeScript conflict.
+ */
+export interface IVehicle {
   make: string;
   model: string;
   year: number;

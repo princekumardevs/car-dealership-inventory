@@ -84,3 +84,36 @@ Maintained in chronological order and updated after each exchange, as required b
 - Proposed commit message. Stopped — did not begin Step 3.
 
 ---
+
+### Prompt 5
+
+> go
+
+*(Approval to write the Step 3 failing tests)*
+
+**AI Response:**
+- Created `backend/tests/vehicle.test.ts` with 23 failing tests:
+  - `GET /api/vehicles` — 4 tests (no auth, empty list, populated list, field shape)
+  - `POST /api/vehicles` — 8 tests (no auth, wrong role, happy path, missing make/model, invalid category, negative price/quantity)
+  - `PUT /api/vehicles/:id` — 6 tests (no auth, wrong role, happy path, not found, malformed ID, negative price)
+  - `DELETE /api/vehicles/:id` — 5 tests (no auth, wrong role, happy path + confirm gone via GET, not found, malformed ID)
+- Ran `npm test` — 23 vehicle tests failed (all 404), auth suite stayed 17/17.
+- Stopped and listed all 23 tests for review.
+
+---
+
+### Prompt 6
+
+> go
+
+*(Approval to implement Step 3)*
+
+**AI Response:**
+- Implemented `backend/src/controllers/vehicle.controller.ts` — `getVehicles`, `createVehicle`, `updateVehicle`, `deleteVehicle`. Explicit negative price/quantity guards added before Mongoose validation (runValidators doesn't reliably catch min violations on partial updates).
+- Implemented `backend/src/routes/vehicle.routes.ts` — `authMiddleware` at router level; `requireRole("admin")` on POST/PUT/DELETE; GET open to any authenticated user.
+- Mounted vehicle routes at `/api/vehicles` in `app.ts`.
+- Debugged one TS compile error: `IVehicle extends Document` clashes because `model` is both a vehicle field and a Mongoose Document method. Fixed by removing `extends Document` from `IVehicle` — the correct Mongoose v8 pattern.
+- Final `npm test` result: **40/40 passed** (both suites green) on the second run.
+- Updated README and PROMPTS.md. Proposed commit message. Stopped — did not begin Step 4.
+
+---
