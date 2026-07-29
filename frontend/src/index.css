@@ -155,6 +155,7 @@ body {
   background: linear-gradient(135deg, rgba(99, 102, 241, 0.05), transparent);
   opacity: 0;
   transition: opacity 0.3s ease;
+  pointer-events: none; /* must not intercept clicks on child buttons */
 }
 .vehicle-card:hover {
   transform: translateY(-4px);
