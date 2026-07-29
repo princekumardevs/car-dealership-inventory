@@ -179,3 +179,21 @@ Maintained in chronological order and updated after each exchange, as required b
 - Updated README test report and AI usage sections. Proposed commit message. Stopped — did not begin Step 6 (Frontend).
 
 ---
+
+### Prompt 11
+
+> go
+
+*(Approval to build the full frontend — Steps 6, 7, and 8 combined)*
+
+**AI Response:**
+- **Scaffold (Step 6):** Ran `npx create-vite@latest ./frontend --template react-ts`, installed `tailwindcss @tailwindcss/vite react-router-dom axios`. Configured `vite.config.ts` with Tailwind plugin and `/api` → `http://localhost:5000` proxy. Updated `index.html` with SEO meta, title, and Outfit font from Google Fonts.
+- **Design System:** Built `src/index.css` — Tailwind v4 `@import`, CSS custom properties, glassmorphism `.glass`, gradient text, premium button classes (`.btn-primary`, `.btn-ghost`, `.btn-danger`, `.btn-success`), `.input-field`, `.vehicle-card` with hover lift, `.badge` variants, modal overlay, toast notification, navbar, and keyframe animations.
+- **API Layer:** `src/api/client.ts` (Axios instance, JWT Bearer interceptor, 401 redirect interceptor), `src/api/auth.ts` (register, login), `src/api/vehicles.ts` (getVehicles, searchVehicles, createVehicle, updateVehicle, deleteVehicle, purchaseVehicle, restockVehicle — fully typed).
+- **Auth Context:** `src/context/AuthContext.tsx` — JWT + user persisted to localStorage, cross-tab sync via `storage` event, `isAdmin` + `isAuthenticated` derived state.
+- **Components:** `ProtectedRoute` + `AdminRoute` (route guards), `Navbar` (sticky glass, logo, user chip with avatar initial + admin badge), `VehicleCard` (emoji category icon, price, stock badge green/amber/red, purchase button with spinner), `VehicleForm` (add/edit modal with all fields).
+- **Pages (Steps 7-8):** `LoginPage` + `RegisterPage` (floating orb backgrounds, branded auth card, redirect after auth), `VehiclesPage` (live filter bar with 5 filters, responsive card grid, toast notifications on purchase, unauthenticated prompt), `AdminPage` (stats dashboard: total/in-stock/out-of-stock/inventory-value cards; admin table with edit/delete/restock per row; restock modal).
+- **Bug fixed:** Vite ESM runtime error — TypeScript `interface` exports are erased at compile time, causing "does not provide export" at runtime. Fixed with `import type` in all consumer files.
+- **Result:** Zero TypeScript errors (`tsc --noEmit`), dev server running at `http://localhost:5173`.
+
+---

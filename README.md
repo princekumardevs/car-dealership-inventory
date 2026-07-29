@@ -75,7 +75,29 @@ npm run dev
 
 ### Frontend Setup
 
-> ⚠️ Frontend scaffolding is completed in Step 6 of the build order. Instructions will be added here when that step is done.
+```bash
+# From the repo root
+cd frontend
+
+# Install dependencies
+npm install
+
+# Start the dev server (proxies /api to http://localhost:5000)
+npm run dev
+# App runs at http://localhost:5173
+```
+
+> ⚠️ The backend must be running on port 5000 before starting the frontend.
+> The Vite dev server proxies all `/api` requests to `http://localhost:5000`.
+
+#### Pages
+
+| Route       | Access    | Description                                      |
+|-------------|-----------|--------------------------------------------------|
+| `/login`    | Public    | Email + password sign-in                         |
+| `/register` | Public    | Create a new user account                        |
+| `/`         | Auth only | Browse & search inventory, purchase vehicles     |
+| `/admin`    | Admin     | Full CRUD, restock, and inventory stats dashboard |
 
 ---
 
@@ -302,6 +324,13 @@ Time:        24.021 s
 - Wrote 16 failing tests in `tests/inventory.test.ts` covering purchase (401, 400 malformed ID, 404, success for user, success for admin, 409 out-of-stock, atomic race condition) and restock (401, 403, 400 malformed ID, 404, missing qty, zero qty, negative qty, success, restock from zero).
 - After approval: added `purchaseVehicle` (atomic `findOneAndUpdate` with `{ quantity: { $gt: 0 } }` guard + `$inc: -1`; single follow-up read to distinguish 404 from 409) and `restockVehicle` (`$inc` with positive-integer validation); mounted both routes in `vehicle.routes.ts`.
 - Final result: **68/68 tests green** on the first run.
+
+#### Steps 6–8 — Frontend (Vite + React + TypeScript + Tailwind CSS)
+- Scaffolded `/frontend` with `create-vite@latest --template react-ts`, installed Tailwind v4 via `@tailwindcss/vite` plugin, React Router v6, and Axios.
+- Built complete dark-mode UI: global CSS design system (glassmorphism, indigo/violet gradient, custom component classes), Axios client with JWT + 401 interceptors, AuthContext (localStorage persistence, cross-tab sync), route guards (ProtectedRoute, AdminRoute).
+- Pages: `LoginPage` and `RegisterPage` (auth cards with floating orb backgrounds), `VehiclesPage` (live search/filter bar + responsive card grid + purchase with toast), `AdminPage` (stats dashboard + admin table with edit/delete/restock actions + modals).
+- Fixed a Vite ESM runtime error: TypeScript `interface` exports are erased at compile time; added `import type` in all consumer files.
+- Zero TypeScript errors; dev server running at `http://localhost:5173`.
 
 ### Workflow Reflection
 
