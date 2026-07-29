@@ -17,7 +17,7 @@ const createApp = (): Application => {
 
   // ── Middleware ───────────────────────────────────────────────────────────────
   app.use(cors({
-  origin: ['https://car-dealership-inventory-eight.vercel.app', 'http://localhost:5173'],
+  origin: ['https://car-dealership-inventory-eight.vercel.app', 'https://car-dealership.princedev.in', 'http://localhost:5173'],
   credentials: true,
 }));
   app.use(express.json());
