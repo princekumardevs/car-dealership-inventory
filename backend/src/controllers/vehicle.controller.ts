@@ -178,3 +178,93 @@ export const deleteVehicle = async (req: Request, res: Response): Promise<void> 
 
   res.status(200).json({ message: "Vehicle deleted successfully." });
 };
+
+// ─────────────────────────────────────────────────────────────────────────────
+// POST /api/vehicles/:id/purchase   (any authenticated user)
+// ─────────────────────────────────────────────────────────────────────────────
+/**
+ * Atomically decrements quantity by 1 using a quantity guard in the query
+ * filter, so the check and decrement happen in a single round-trip to MongoDB.
+ * This prevents race conditions — no read-then-write pattern.
+ *
+ * Query:  { _id: id, quantity: { $gt: 0 } }  ← guard: only match if in-stock
+ * Update: { $inc: { quantity: -1 } }
+ *
+ * If null is returned (document not matched), we do ONE follow-up read to
+ * distinguish "vehicle doesn't exist" (404) from "vehicle exists but qty = 0"
+ * (409 Conflict). The write path itself remains atomic.
+ */
+export const purchaseVehicle = async (req: Request, res: Response): Promise<void> => {
+  const { id } = req.params;
+
+  if (!isValidId(id)) {
+    res.status(400).json({ message: "Invalid vehicle ID format." });
+    return;
+  }
+
+  // Atomic decrement — only succeeds if quantity > 0
+  const updated = await Vehicle.findOneAndUpdate(
+    { _id: id, quantity: { $gt: 0 } },
+    { $inc: { quantity: -1 } },
+    { new: true }
+  );
+
+  if (updated) {
+    res.status(200).json({ vehicle: updated });
+    return;
+  }
+
+  // Null result: either vehicle doesn't exist, or it's out of stock.
+  // One follow-up read to distinguish the two cases.
+  const exists = await Vehicle.exists({ _id: id });
+  if (!exists) {
+    res.status(404).json({ message: "Vehicle not found." });
+    return;
+  }
+
+  res.status(409).json({ message: "Vehicle is out of stock." });
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// POST /api/vehicles/:id/restock   (admin only)
+// ─────────────────────────────────────────────────────────────────────────────
+/**
+ * Atomically increments quantity by the amount supplied in req.body.quantity.
+ * Amount must be a positive integer. Uses $inc to avoid any race condition
+ * with concurrent purchases.
+ */
+export const restockVehicle = async (req: Request, res: Response): Promise<void> => {
+  const { id } = req.params;
+
+  if (!isValidId(id)) {
+    res.status(400).json({ message: "Invalid vehicle ID format." });
+    return;
+  }
+
+  const { quantity } = req.body;
+
+  if (quantity === undefined || quantity === null) {
+    res.status(400).json({ message: "quantity is required in the request body." });
+    return;
+  }
+
+  const amount = Number(quantity);
+  if (!Number.isInteger(amount) || amount <= 0) {
+    res.status(400).json({ message: "quantity must be a positive integer." });
+    return;
+  }
+
+  // Atomic increment — no read-then-write
+  const updated = await Vehicle.findByIdAndUpdate(
+    id,
+    { $inc: { quantity: amount } },
+    { new: true }
+  );
+
+  if (!updated) {
+    res.status(404).json({ message: "Vehicle not found." });
+    return;
+  }
+
+  res.status(200).json({ vehicle: updated });
+};

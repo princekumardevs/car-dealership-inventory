@@ -145,3 +145,37 @@ Maintained in chronological order and updated after each exchange, as required b
 - Updated README test report and AI usage sections. Proposed commit message. Stopped — did not begin Step 5.
 
 ---
+
+### Prompt 9
+
+> go
+
+*(Approval to write the Step 5 failing tests)*
+
+**AI Response:**
+- Created `backend/tests/inventory.test.ts` with 16 tests:
+  - `POST /api/vehicles/:id/purchase` — 7 tests: no-auth, malformed ID, not-found, success (user), success (admin), out-of-stock 409, **atomic race condition** (two concurrent purchases on qty=1 → exactly one 200 + one 409).
+  - `POST /api/vehicles/:id/restock` — 9 tests: no-auth, wrong role (403), malformed ID, not-found, missing qty body, zero qty, negative qty, success (qty 2→12), restock from zero (0→5).
+- Ran `npm test` — 14 inventory tests failed (all 404); 2 passed for free (401 no-token). Auth+vehicle suites stayed 52/52.
+- Stopped and listed all 16 tests for review.
+
+---
+
+### Prompt 10
+
+> go
+
+*(Approval to implement Step 5)*
+
+**AI Response:**
+- Added `purchaseVehicle` to `vehicle.controller.ts`:
+  - Atomic `findOneAndUpdate({ _id: id, quantity: { $gt: 0 } }, { $inc: { quantity: -1 } }, { new: true })`.
+  - On null result: one follow-up `Vehicle.exists()` read to distinguish 404 (doesn't exist) from 409 (out of stock). Write is never read-then-write.
+- Added `restockVehicle` to `vehicle.controller.ts`:
+  - Validates `quantity` is present and a positive integer before calling `findByIdAndUpdate({ $inc: { quantity: amount } }, { new: true })`.
+- Imported both and mounted `POST /:id/purchase` (any auth) and `POST /:id/restock` (admin) in `vehicle.routes.ts`.
+- Server restarted mid-session between writing imports and mounting routes; resumed cleanly.
+- Final `npm test` result: **68/68 passed** on the first run.
+- Updated README test report and AI usage sections. Proposed commit message. Stopped — did not begin Step 6 (Frontend).
+
+---

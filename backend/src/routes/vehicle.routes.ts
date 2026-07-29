@@ -5,6 +5,8 @@ import {
   createVehicle,
   updateVehicle,
   deleteVehicle,
+  purchaseVehicle,
+  restockVehicle,
 } from "../controllers/vehicle.controller";
 import { authMiddleware, requireRole } from "../middleware/auth";
 
@@ -49,5 +51,19 @@ router.put("/:id", requireRole("admin"), updateVehicle);
  * @desc   Remove a vehicle from inventory
  */
 router.delete("/:id", requireRole("admin"), deleteVehicle);
+
+/**
+ * @route  POST /api/vehicles/:id/purchase
+ * @access Authenticated (any role)
+ * @desc   Atomically decrement quantity by 1; returns 409 when out of stock
+ */
+router.post("/:id/purchase", purchaseVehicle);
+
+/**
+ * @route  POST /api/vehicles/:id/restock
+ * @access Admin only
+ * @desc   Atomically increment quantity by req.body.quantity
+ */
+router.post("/:id/restock", requireRole("admin"), restockVehicle);
 
 export default router;

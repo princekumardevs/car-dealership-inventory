@@ -206,6 +206,38 @@ Tests:       52 passed, 52 total
 Time:        18.879 s
 ```
 
+### Step 5 — Purchase & Restock (2026-07-29)
+
+```
+PASS tests/inventory.test.ts (10.918 s)
+
+  POST /api/vehicles/:id/purchase
+    √ should return 401 when no token is provided (290 ms)
+    √ should return 400 for a malformed vehicle ID (153 ms)
+    √ should return 404 for a valid but non-existent vehicle ID (160 ms)
+    √ should return 200 and decrement quantity by 1 for an authenticated user (154 ms)
+    √ should also allow an admin to purchase a vehicle (152 ms)
+    √ should return 409 when quantity is already 0 (out of stock) (156 ms)
+    √ should be atomic — two concurrent purchases on qty=1 should result in exactly one success and one 409 (156 ms)
+  POST /api/vehicles/:id/restock
+    √ should return 401 when no token is provided (145 ms)
+    √ should return 403 when called by a non-admin user (148 ms)
+    √ should return 400 for a malformed vehicle ID (138 ms)
+    √ should return 404 for a valid but non-existent vehicle ID (141 ms)
+    √ should return 400 if quantity is missing from the request body (150 ms)
+    √ should return 400 if quantity is zero (157 ms)
+    √ should return 400 if quantity is negative (150 ms)
+    √ should return 200 and increment quantity by the given amount for an admin (156 ms)
+    √ should be able to restock a vehicle that is completely out of stock (160 ms)
+
+PASS tests/vehicle.test.ts (7.972 s) — 35 passed (unchanged)
+PASS tests/auth.test.ts — 17 passed (unchanged)
+
+Test Suites: 3 passed, 3 total
+Tests:       68 passed, 68 total
+Time:        24.021 s
+```
+
 ---
 
 ## API Reference
@@ -265,6 +297,11 @@ Time:        18.879 s
 - Wrote 12 failing tests covering no-auth, no-filter, make/model/category filters, price range, combined filters, no-match, and invalid price param validation.
 - After approval: added `searchVehicles` to the controller (dynamic Mongoose filter, `$regex` for case-insensitive make/model, `$gte`/`$lte` for prices); mounted `/search` before `/:id` to prevent Express treating "search" as an ID.
 - Final result: **52/52 tests green** on the second run.
+
+#### Step 5 — Purchase & Restock (`POST /api/vehicles/:id/purchase` + `/restock`)
+- Wrote 16 failing tests in `tests/inventory.test.ts` covering purchase (401, 400 malformed ID, 404, success for user, success for admin, 409 out-of-stock, atomic race condition) and restock (401, 403, 400 malformed ID, 404, missing qty, zero qty, negative qty, success, restock from zero).
+- After approval: added `purchaseVehicle` (atomic `findOneAndUpdate` with `{ quantity: { $gt: 0 } }` guard + `$inc: -1`; single follow-up read to distinguish 404 from 409) and `restockVehicle` (`$inc` with positive-integer validation); mounted both routes in `vehicle.routes.ts`.
+- Final result: **68/68 tests green** on the first run.
 
 ### Workflow Reflection
 
