@@ -334,6 +334,13 @@ Time:        24.021 s
 
 ### Workflow Reflection
 
-> ✏️ **This section will be written at the end of the session based on what actually happened — not written in advance.**
+Using AI tools (Gemini / Claude via Antigravity) significantly accelerated development while enforcing rigorous software engineering discipline:
+
+1. **Test-Driven Development Rigor**: By having the AI write failing test suites (`Red`) before implementation (`Green`), edge cases (like atomic race conditions on purchases, case-insensitive regex search, and strict role authorization) were identified and tested upfront rather than after the fact.
+2. **Type Safety & Refactoring**: AI identified subtle TypeScript compilation pitfalls early, such as Mongoose `IVehicle extends Document` clashes and Vite ESM interface erasure, preventing runtime bugs before code execution.
+3. **Deployment & Troubleshooting**: AI provided instant root-cause analysis for production issues, such as setting up Nginx SSL reverse proxying to solve mixed-content blocks and creating `vercel.json` SPA rewrite rules to fix client-side 404 errors on page refresh.
+
+Overall, AI acted as an expert pair programmer—handling boilerplate, enforcing TDD workflows, and maintaining clean architectural boundaries while preserving manual code review and verification.
 
 ---
+

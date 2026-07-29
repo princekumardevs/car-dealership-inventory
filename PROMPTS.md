@@ -197,3 +197,27 @@ Maintained in chronological order and updated after each exchange, as required b
 - **Result:** Zero TypeScript errors (`tsc --noEmit`), dev server running at `http://localhost:5173`.
 
 ---
+
+### Prompt 12
+
+> help me Set up Nginx as a reverse proxy on port 80/443 with SSL (Certbot). This lets the frontend call https://api.yourdomain.com instead of http://ip:5000.
+
+**AI Response:**
+- Created detailed step-by-step documentation for configuring Nginx on Ubuntu EC2.
+- Provided server block configuration for proxying port 80/443 to `http://127.0.0.1:5000`.
+- Documented Certbot installation and automated SSL certificate generation using `certbot --nginx`.
+- Updated deployment documentation artifact (`testing_and_deployment_guide.md`).
+
+---
+
+### Prompt 13
+
+> when i am visting https://car-dealership-inventory-eight.vercel.app/, it redirects to https://car-dealership-inventory-eight.vercel.app/login, and when i refresh the page it shows this attached screenshot (404: NOT_FOUND)
+
+**AI Response:**
+- Diagnosed single-page application (SPA) client-side routing refresh issue on Vercel.
+- Created `frontend/vercel.json` and root `vercel.json` with rewrite rule `"source": "/(.*)", "destination": "/index.html"`.
+- Pushed changes to GitHub repo to trigger automatic deployment fix.
+
+---
+
